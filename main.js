@@ -1,26 +1,23 @@
-// main.js
+let interval;
 
 export function onStart() {
   console.log("✅ Windows Accent Color Sync Add-on gestartet!");
-  
-  // Alle angeschlossenen Geräte holen
-  const devices = signalrgb.devices;
 
-  // Testfarbe: kräftiges Blau
-  const color = { r: 0, g: 100, b: 255 };
+  interval = setInterval(() => {
+    const devices = signalrgb.devices;
+    const color = { r: 0, g: 100, b: 255 }; // Testfarbe
 
-  // Farbe auf alle Geräte anwenden
-  devices.forEach(device => {
-    try {
-      device.setColor(color.r, color.g, color.b);
-    } catch (err) {
-      console.log(`Fehler beim Setzen der Farbe auf ${device.name}: ${err}`);
-    }
-  });
-
-  console.log("🎨 Testfarbe angewendet!");
+    devices.forEach(device => {
+      try {
+        device.setColor(color.r, color.g, color.b);
+      } catch (err) {
+        console.log(`Fehler beim Setzen der Farbe auf ${device.name}: ${err}`);
+      }
+    });
+  }, 1000); // alle 1 Sekunde aktualisieren
 }
 
 export function onStop() {
   console.log("🛑 Add-on gestoppt.");
+  clearInterval(interval);
 }
