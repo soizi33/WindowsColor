@@ -1,12 +1,15 @@
 // main.js
 
+import * as os from "os";
+import { execSync } from "child_process";
+
 // --------------------------- Addon Infos ---------------------------
 export function Name() { return "WindowsColor"; }
-export function Version() { return "1.0.0"; }
+export function Version() { return "1.1.0"; }
 export function Type() { return "software"; }
 export function Publisher() { return "Soizi33"; }
 
-let forcedColor = { r: 0, g: 0, b: 0 }; // Platzhalter für Windows-Farbe
+let forcedColor = { r: 0, g: 0, b: 0 };
 
 // --------------------------- Lifecycle ---------------------------
 export function Initialize() {
@@ -17,14 +20,12 @@ export function Render() {
     // Windows-Farbe auslesen
     forcedColor = getWindowsAccentColor();
 
-    // Geräte abrufen
     const devices = signalrgb.devices;
     if (!devices || devices.length === 0) {
         console.log("⚠️ Keine Geräte gefunden.");
         return;
     }
 
-    // Farbe setzen
     devices.forEach(device => {
         try {
             SendSolidColor(device, forcedColor.r, forcedColor.g, forcedColor.b);
@@ -36,7 +37,6 @@ export function Render() {
 
 export function Shutdown() {
     console.log("🛑 WindowsColor Addon gestoppt.");
-    // LEDs ausschalten
     const devices = signalrgb.devices;
     devices.forEach(device => {
         SendSolidColor(device, 0, 0, 0);
@@ -47,9 +47,8 @@ export function Shutdown() {
 function SendSolidColor(device, r, g, b) {
     const packet = [0x53, 0x5A,
         0x30, 0x30,
-        0x00, 0x00, // buffer mode
-        0x00, 0x00, 0x00, 0x23, // size
-        0x00, 0x00, 0x00, 0x00, // security
+        0x00, 0x00,
+        0x00, 0x00, 0x00, 0x23,
         0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00,
         0x22, 0x00, 0x00, 0x00, 0x00,
@@ -61,9 +60,27 @@ function SendSolidColor(device, r, g, b) {
     udp.send(device.ip, device.port, packet);
 }
 
-// Dummy-Funktion: Windows-Farbe auslesen
+// Liest die Windows-Akzentfarbe aus der Registry
 function getWindowsAccentColor() {
-    // Später ersetzen mit Registry- oder UWP-Abfrage
-    // Für Test aktuell kräftiges Blau
+    try {
+        const output = execSync(
+            'reg query "HKCU\\Software\\Microsoft\\Windows\\DWM" /v AccentColor',
+            { encoding: 'utf8' }
+        );
+
+        const match = output.match(/0x([0-9a-fA-F]{8})/);
+        if (match) {
+            const hex = parseInt(match[1], 16);
+            // DWORD BGR -> RGB
+            const b = (hex & 0xFF);
+            const g = (hex >> 8) & 0xFF;
+            const r = (hex >> 16) & 0xFF;
+            return { r, g, b };
+        }
+    } catch (err) {
+        console.log("⚠️ Fehler beim Auslesen der Windows-Farbe:", err);
+    }
+
+    // Fallback-Farbe
     return { r: 0, g: 100, b: 255 };
 }
