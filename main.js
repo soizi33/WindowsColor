@@ -1,25 +1,30 @@
-let interval;
+// main.js
 
 export function onStart() {
-  console.log("✅ Windows Accent Color Sync Add-on gestartet!");
+    console.log("✅ Windows Accent Color Sync Add-on gestartet!");
+    console.log("ℹ️ Das Add-on setzt aktuell eine Testfarbe (Blau).");
+}
 
-  interval = setInterval(() => {
+export function onUpdate() {
     const devices = signalrgb.devices;
-    console.log("Aktuelle Geräte:", devices.map(d => d.name)); // DEBUG
 
-    const color = { r: 0, g: 100, b: 255 }; // Testfarbe
+    if (!devices || devices.length === 0) {
+        console.log("⚠️ Keine Geräte gefunden.");
+        return;
+    }
+
+    // Testfarbe: kräftiges Blau
+    const color = { r: 0, g: 100, b: 255 };
 
     devices.forEach(device => {
-      try {
-        device.setColor(color.r, color.g, color.b);
-      } catch (err) {
-        console.log(`Fehler beim Setzen der Farbe auf ${device.name}: ${err}`);
-      }
+        try {
+            device.setColor(color.r, color.g, color.b);
+        } catch (err) {
+            console.log(`Fehler beim Setzen der Farbe auf ${device.name}: ${err}`);
+        }
     });
-  }, 1000);
 }
 
 export function onStop() {
-  console.log("🛑 Add-on gestoppt.");
-  clearInterval(interval);
+    console.log("🛑 Add-on gestoppt.");
 }
