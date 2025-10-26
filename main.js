@@ -5,6 +5,8 @@ export function onStart() {
 
   interval = setInterval(() => {
     const devices = signalrgb.devices;
+    console.log("Aktuelle Geräte:", devices.map(d => d.name)); // DEBUG
+
     const color = { r: 0, g: 100, b: 255 }; // Testfarbe
 
     devices.forEach(device => {
@@ -14,7 +16,7 @@ export function onStart() {
         console.log(`Fehler beim Setzen der Farbe auf ${device.name}: ${err}`);
       }
     });
-  }, 1000); // alle 1 Sekunde aktualisieren
+  }, 1000);
 }
 
 export function onStop() {
